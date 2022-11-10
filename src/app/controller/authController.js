@@ -12,9 +12,7 @@ const redis = require('../../config/redis')
 
 
 class authController{
-    index(req,res){
-        res.send("Hello from auth")
-    }
+    
     async register(req, res, next){
         try {
             const salt = bcrypt.genSaltSync(10)
