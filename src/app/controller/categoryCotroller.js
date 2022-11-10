@@ -2,9 +2,7 @@ const Category = require('../models/category')
 const createError = require("../../utils/error")
 
 class CategoryController{
-    index (req,res){
-        res.send("Hello from category")
-    }
+    
     async createCategory(req, res, next){
         const newCategory = new Category(req.body)
         try{
