@@ -2,9 +2,42 @@ const User = require("../models/user")
 const verifyToken = require("../models/token")
 const bcrypt = require('bcryptjs')
 const createError = require("../../utils/error")
-class userController{
+const ROLES_LIST = require("../../config/allowedRoles")
+
+class UserController{
     index (req,res){
         res.send("Hello from user")
+    }
+
+    async createUser(req, res, next){
+        try{
+            const salt = bcrypt.genSaltSync(10)
+            const hash = bcrypt.hashSync(req.body.password, salt)
+            let roles = []
+            for(let role of req.body.roles){
+                for(let key in ROLES_LIST){
+                    if(role === key) roles.push(ROLES_LIST[key])
+                }
+            }
+
+            const newUser = new User({
+                username: req.body.username,
+                password: hash,
+                email: req.body.email,
+                roles: roles,
+                first_name: req.body.firstName,
+                last_name: req.body.lastName,
+                address: req.body.address,
+                phoneNumber: req.body.phoneNumber,
+                isActive: true,
+                verified: true
+            })
+            await newUser.save()
+            res.status(200).json(newUser)
+        }
+        catch(err){
+            next(err)
+        }
     }
     async updateUser(req, res, next){
         try{
@@ -84,7 +117,7 @@ class userController{
                 key: req.params.key
             })
             
-            if(!token) return next(createError(400,"Invalid link"))
+            if(!token) return next(createError(400,"Token Invalid"))
 
             await User.findByIdAndUpdate(req.params.id, {verified: true}, {new: true})
             await token.remove()
@@ -98,4 +131,4 @@ class userController{
 
 }
 
-module.exports = new userController
+module.exports = new UserController
